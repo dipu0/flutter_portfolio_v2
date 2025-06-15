@@ -16,7 +16,7 @@ enum ButtonSize {
   large,
 }
 
-class ResponsiveButton extends StatefulWidget {
+class ResponsiveButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final ButtonVariant variant;
@@ -31,17 +31,6 @@ class ResponsiveButton extends StatefulWidget {
   final Widget? icon;
   final bool iconAfter;
   final double? iconSpacing;
-
-  // Animation options
-  final bool enableHoverAnimation;
-  final bool enableScaleAnimation;
-  final bool enableRippleEffect;
-  final Duration animationDuration;
-  final Curve animationCurve;
-  final double hoverScale;
-  final double pressedScale;
-  final Color? hoverColor;
-  final double hoverElevation;
   final bool enableLoadingState;
   final bool isLoading;
 
@@ -61,84 +50,12 @@ class ResponsiveButton extends StatefulWidget {
     this.icon,
     this.iconAfter = false,
     this.iconSpacing,
-
-    // Animation defaults
-    this.enableHoverAnimation = true,
-    this.enableScaleAnimation = true,
-    this.enableRippleEffect = true,
-    this.animationDuration = const Duration(milliseconds: 200),
-    this.animationCurve = Curves.easeInOut,
-    this.hoverScale = 1.02,
-    this.pressedScale = 0.98,
-    this.hoverColor,
-    this.hoverElevation = 4.0,
     this.enableLoadingState = false,
     this.isLoading = false,
   });
 
-  @override
-  State<ResponsiveButton> createState() => _ResponsiveButtonState();
-}
-
-class _ResponsiveButtonState extends State<ResponsiveButton>
-    with TickerProviderStateMixin {
-  late AnimationController _scaleController;
-  late AnimationController _hoverController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _hoverAnimation;
-  late Animation<double> _elevationAnimation;
-
-  bool _isHovered = false;
-  bool _isPressed = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _scaleController = AnimationController(
-      duration: widget.animationDuration,
-      vsync: this,
-    );
-
-    _hoverController = AnimationController(
-      duration: widget.animationDuration,
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: widget.hoverScale,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: widget.animationCurve,
-    ));
-
-    _hoverAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _hoverController,
-      curve: widget.animationCurve,
-    ));
-
-    _elevationAnimation = Tween<double>(
-      begin: _getBaseElevation(),
-      end: widget.hoverElevation,
-    ).animate(CurvedAnimation(
-      parent: _hoverController,
-      curve: widget.animationCurve,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _scaleController.dispose();
-    _hoverController.dispose();
-    super.dispose();
-  }
-
   double _getBaseElevation() {
-    switch (widget.variant) {
+    switch (variant) {
       case ButtonVariant.primary:
         return 2.0;
       case ButtonVariant.secondary:
@@ -151,30 +68,42 @@ class _ResponsiveButtonState extends State<ResponsiveButton>
   }
 
   EdgeInsets _getResponsivePadding(BuildContext context) {
-    if (widget.padding != null) return widget.padding!;
+    if (padding != null) return padding!;
 
-    final basePadding = switch (widget.size) {
-      ButtonSize.small => context.responsiveValue<EdgeInsets>(
+    final basePadding = switch (size) {
+      ButtonSize.small => ResponsiveHelper.getResponsiveValue<EdgeInsets>(
+          context: context,
           mobile: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           tablet: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          smallLaptop: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
           desktop: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          largeDesktop:
+              const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
         ),
-      ButtonSize.medium => context.responsiveValue<EdgeInsets>(
+      ButtonSize.medium => ResponsiveHelper.getResponsiveValue<EdgeInsets>(
+          context: context,
           mobile: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           tablet: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          smallLaptop: const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
           desktop: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          largeDesktop:
+              const EdgeInsets.symmetric(horizontal: 26, vertical: 18),
         ),
-      ButtonSize.large => context.responsiveValue<EdgeInsets>(
+      ButtonSize.large => ResponsiveHelper.getResponsiveValue<EdgeInsets>(
+          context: context,
           mobile: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           tablet: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+          smallLaptop: const EdgeInsets.symmetric(horizontal: 26, vertical: 19),
           desktop: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+          largeDesktop:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 22),
         ),
     };
 
     // Adjust padding if icon is present
-    if (widget.icon != null) {
-      final iconSpacing = widget.iconSpacing ?? _getIconSpacing(context);
-      if (widget.iconAfter) {
+    if (icon != null) {
+      final iconSpacing = this.iconSpacing ?? _getIconSpacing(context);
+      if (iconAfter) {
         return basePadding.copyWith(right: basePadding.right - iconSpacing / 2);
       } else {
         return basePadding.copyWith(left: basePadding.left - iconSpacing / 2);
@@ -185,237 +114,206 @@ class _ResponsiveButtonState extends State<ResponsiveButton>
   }
 
   double _getResponsiveMinWidth(BuildContext context) {
-    if (widget.minWidth != null) return widget.minWidth!;
+    if (minWidth != null) return minWidth!;
 
-    return switch (widget.size) {
-      ButtonSize.small => context.responsiveValue<double>(
+    return switch (size) {
+      ButtonSize.small => ResponsiveHelper.getResponsiveValue<double>(
+          context: context,
           mobile: 80.0,
           tablet: 90.0,
+          smallLaptop: 95.0,
           desktop: 100.0,
+          largeDesktop: 110.0,
         ),
-      ButtonSize.medium => context.responsiveValue<double>(
+      ButtonSize.medium => ResponsiveHelper.getResponsiveValue<double>(
+          context: context,
           mobile: 120.0,
           tablet: 140.0,
+          smallLaptop: 150.0,
           desktop: 160.0,
+          largeDesktop: 180.0,
         ),
-      ButtonSize.large => context.responsiveValue<double>(
+      ButtonSize.large => ResponsiveHelper.getResponsiveValue<double>(
+          context: context,
           mobile: 140.0,
           tablet: 160.0,
+          smallLaptop: 170.0,
           desktop: 180.0,
+          largeDesktop: 200.0,
         ),
     };
   }
 
   double _getIconSpacing(BuildContext context) {
-    return switch (widget.size) {
-      ButtonSize.small => context.responsiveValue<double>(
+    return switch (size) {
+      ButtonSize.small => ResponsiveHelper.getResponsiveValue<double>(
+          context: context,
           mobile: 6.0,
           tablet: 7.0,
+          smallLaptop: 7.5,
           desktop: 8.0,
+          largeDesktop: 9.0,
         ),
-      ButtonSize.medium => context.responsiveValue<double>(
+      ButtonSize.medium => ResponsiveHelper.getResponsiveValue<double>(
+          context: context,
           mobile: 8.0,
           tablet: 9.0,
+          smallLaptop: 9.5,
           desktop: 10.0,
+          largeDesktop: 11.0,
         ),
-      ButtonSize.large => context.responsiveValue<double>(
+      ButtonSize.large => ResponsiveHelper.getResponsiveValue<double>(
+          context: context,
           mobile: 10.0,
           tablet: 11.0,
+          smallLaptop: 11.5,
           desktop: 12.0,
+          largeDesktop: 13.0,
         ),
     };
   }
 
   double _getIconSize(BuildContext context) {
-    return switch (widget.size) {
-      ButtonSize.small => context.responsiveValue<double>(
+    return switch (size) {
+      ButtonSize.small => ResponsiveHelper.getResponsiveValue<double>(
+          context: context,
           mobile: 16.0,
           tablet: 17.0,
+          smallLaptop: 17.5,
           desktop: 18.0,
+          largeDesktop: 19.0,
         ),
-      ButtonSize.medium => context.responsiveValue<double>(
+      ButtonSize.medium => ResponsiveHelper.getResponsiveValue<double>(
+          context: context,
           mobile: 18.0,
           tablet: 19.0,
+          smallLaptop: 19.5,
           desktop: 20.0,
+          largeDesktop: 21.0,
         ),
-      ButtonSize.large => context.responsiveValue<double>(
+      ButtonSize.large => ResponsiveHelper.getResponsiveValue<double>(
+          context: context,
           mobile: 20.0,
           tablet: 21.0,
+          smallLaptop: 21.5,
           desktop: 22.0,
+          largeDesktop: 23.0,
         ),
     };
   }
 
-  (double, double, double) _getFontSizes() {
-    return switch (widget.size) {
-      ButtonSize.small => (12.0, 13.0, 14.0),
-      ButtonSize.medium => (14.0, 15.0, 16.0),
-      ButtonSize.large => (16.0, 17.0, 18.0),
+  (double, double, double, double, double) _getFontSizes() {
+    return switch (size) {
+      ButtonSize.small => (12.0, 13.0, 13.5, 14.0, 15.0),
+      ButtonSize.medium => (14.0, 15.0, 15.5, 16.0, 17.0),
+      ButtonSize.large => (16.0, 17.0, 17.5, 18.0, 19.0),
     };
-  }
-
-  void _handleHover(bool isHovered) {
-    if (!widget.enableHoverAnimation) return;
-
-    setState(() {
-      _isHovered = isHovered;
-    });
-
-    if (isHovered) {
-      _hoverController.forward();
-      if (widget.enableScaleAnimation) {
-        _scaleController.forward();
-      }
-    } else {
-      _hoverController.reverse();
-      if (widget.enableScaleAnimation) {
-        _scaleController.reverse();
-      }
-    }
-  }
-
-  void _handleTapDown(TapDownDetails details) {
-    if (!widget.enableScaleAnimation) return;
-
-    setState(() {
-      _isPressed = true;
-    });
-
-    _scaleController.animateTo(widget.pressedScale);
-  }
-
-  void _handleTapUp(TapUpDetails details) {
-    if (!widget.enableScaleAnimation) return;
-
-    setState(() {
-      _isPressed = false;
-    });
-
-    if (_isHovered) {
-      _scaleController.animateTo(widget.hoverScale);
-    } else {
-      _scaleController.reverse();
-    }
-  }
-
-  void _handleTapCancel() {
-    if (!widget.enableScaleAnimation) return;
-
-    setState(() {
-      _isPressed = false;
-    });
-
-    if (_isHovered) {
-      _scaleController.animateTo(widget.hoverScale);
-    } else {
-      _scaleController.reverse();
-    }
   }
 
   ButtonStyle _getButtonStyle(BuildContext context, ThemeData theme) {
     final responsivePadding = _getResponsivePadding(context);
     final responsiveMinWidth = _getResponsiveMinWidth(context);
-    final borderRadius = widget.borderRadius ?? BorderRadius.circular(8);
+    final borderRadius = this.borderRadius ?? BorderRadius.circular(8);
 
-    return switch (widget.variant) {
+    return switch (variant) {
       ButtonVariant.primary => ElevatedButton.styleFrom(
-          backgroundColor: widget.backgroundColor ?? theme.colorScheme.primary,
-          foregroundColor: widget.textColor ?? theme.colorScheme.onPrimary,
+          backgroundColor: backgroundColor ?? theme.colorScheme.primary,
+          foregroundColor: textColor ?? theme.colorScheme.onPrimary,
           padding: responsivePadding,
           minimumSize: Size(responsiveMinWidth, 0),
-          maximumSize: widget.maxWidth != null
-              ? Size(widget.maxWidth!, double.infinity)
-              : null,
+          maximumSize:
+              maxWidth != null ? Size(maxWidth!, double.infinity) : null,
           shape: RoundedRectangleBorder(borderRadius: borderRadius),
           elevation: _getBaseElevation(),
         ),
       ButtonVariant.secondary => ElevatedButton.styleFrom(
-          backgroundColor:
-              widget.backgroundColor ?? theme.colorScheme.secondary,
-          foregroundColor: widget.textColor ?? theme.colorScheme.onSecondary,
+          backgroundColor: backgroundColor ?? theme.colorScheme.secondary,
+          foregroundColor: textColor ?? theme.colorScheme.onSecondary,
           padding: responsivePadding,
           minimumSize: Size(responsiveMinWidth, 0),
-          maximumSize: widget.maxWidth != null
-              ? Size(widget.maxWidth!, double.infinity)
-              : null,
+          maximumSize:
+              maxWidth != null ? Size(maxWidth!, double.infinity) : null,
           shape: RoundedRectangleBorder(borderRadius: borderRadius),
           elevation: _getBaseElevation(),
         ),
       ButtonVariant.outlined => OutlinedButton.styleFrom(
-          foregroundColor: widget.textColor ?? theme.colorScheme.primary,
+          foregroundColor: textColor ?? theme.colorScheme.primary,
           padding: responsivePadding,
           minimumSize: Size(responsiveMinWidth, 0),
-          maximumSize: widget.maxWidth != null
-              ? Size(widget.maxWidth!, double.infinity)
-              : null,
+          maximumSize:
+              maxWidth != null ? Size(maxWidth!, double.infinity) : null,
           shape: RoundedRectangleBorder(borderRadius: borderRadius),
           side: BorderSide(
-            color: widget.borderColor ??
-                widget.backgroundColor ??
-                theme.colorScheme.primary,
+            color: borderColor ?? backgroundColor ?? theme.colorScheme.primary,
           ),
         ),
       ButtonVariant.text => TextButton.styleFrom(
-          foregroundColor: widget.textColor ?? theme.colorScheme.primary,
+          foregroundColor: textColor ?? theme.colorScheme.primary,
           padding: responsivePadding,
           minimumSize: Size(responsiveMinWidth, 0),
-          maximumSize: widget.maxWidth != null
-              ? Size(widget.maxWidth!, double.infinity)
-              : null,
+          maximumSize:
+              maxWidth != null ? Size(maxWidth!, double.infinity) : null,
           shape: RoundedRectangleBorder(borderRadius: borderRadius),
         ),
       ButtonVariant.ghost => TextButton.styleFrom(
-          foregroundColor: widget.textColor ?? theme.colorScheme.onSurface,
+          foregroundColor: textColor ?? theme.colorScheme.onSurface,
           backgroundColor: Colors.transparent,
           padding: responsivePadding,
           minimumSize: Size(responsiveMinWidth, 0),
-          maximumSize: widget.maxWidth != null
-              ? Size(widget.maxWidth!, double.infinity)
-              : null,
+          maximumSize:
+              maxWidth != null ? Size(maxWidth!, double.infinity) : null,
           shape: RoundedRectangleBorder(borderRadius: borderRadius),
         ),
     };
   }
 
   Widget _buildButtonContent(BuildContext context) {
-    final (mobileFontSize, tabletFontSize, desktopFontSize) = _getFontSizes();
+    final (
+      mobileFontSize,
+      tabletFontSize,
+      smallLaptopFontSize,
+      desktopFontSize,
+      largeFontSize
+    ) = _getFontSizes();
     final iconSize = _getIconSize(context);
-    final iconSpacing = widget.iconSpacing ?? _getIconSpacing(context);
+    final iconSpacing = this.iconSpacing ?? _getIconSpacing(context);
 
-    if (widget.isLoading && widget.enableLoadingState) {
+    if (isLoading && enableLoadingState) {
       return SizedBox(
         height: iconSize,
         width: iconSize,
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor: AlwaysStoppedAnimation<Color>(
-            widget.textColor ?? Theme.of(context).colorScheme.onPrimary,
+            textColor ?? Theme.of(context).colorScheme.onPrimary,
           ),
         ),
       );
     }
 
-    final textWeight = switch (widget.size) {
+    final textWeight = switch (size) {
       ButtonSize.small => TextWeight.medium,
       ButtonSize.medium => TextWeight.semiBold,
       ButtonSize.large => TextWeight.semiBold,
     };
 
     final textWidget = ResponsiveText(
-      widget.text,
+      text,
       variant: TextVariant.label,
       weight: textWeight,
-      color: widget.textColor,
+      color: textColor,
       mobileFontSize: mobileFontSize,
       tabletFontSize: tabletFontSize,
+      smallLaptopFontSize: smallLaptopFontSize,
       desktopFontSize: desktopFontSize,
+      largeDesktopFontSize: largeFontSize,
       textAlign: TextAlign.center,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       enableHapticFeedback: false,
     );
 
-    if (widget.icon == null) {
+    if (icon == null) {
       return textWidget;
     }
 
@@ -425,13 +323,13 @@ class _ResponsiveButtonState extends State<ResponsiveButton>
       child: IconTheme(
         data: IconThemeData(
           size: iconSize,
-          color: widget.textColor ?? Theme.of(context).colorScheme.onPrimary,
+          color: textColor ?? Theme.of(context).colorScheme.onPrimary,
         ),
-        child: widget.icon!,
+        child: icon!,
       ),
     );
 
-    return widget.iconAfter
+    return iconAfter
         ? Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -452,91 +350,28 @@ class _ResponsiveButtonState extends State<ResponsiveButton>
           );
   }
 
-  Widget _buildButton(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final buttonStyle = _getButtonStyle(context, theme);
     final content = _buildButtonContent(context);
 
-    final button = switch (widget.variant) {
+    return switch (variant) {
       ButtonVariant.primary || ButtonVariant.secondary => ElevatedButton(
-          onPressed: (widget.isLoading && widget.enableLoadingState)
-              ? null
-              : widget.onPressed,
+          onPressed: (isLoading && enableLoadingState) ? null : onPressed,
           style: buttonStyle,
           child: content,
         ),
       ButtonVariant.outlined => OutlinedButton(
-          onPressed: (widget.isLoading && widget.enableLoadingState)
-              ? null
-              : widget.onPressed,
+          onPressed: (isLoading && enableLoadingState) ? null : onPressed,
           style: buttonStyle,
           child: content,
         ),
       ButtonVariant.text || ButtonVariant.ghost => TextButton(
-          onPressed: (widget.isLoading && widget.enableLoadingState)
-              ? null
-              : widget.onPressed,
+          onPressed: (isLoading && enableLoadingState) ? null : onPressed,
           style: buttonStyle,
           child: content,
         ),
     };
-
-    return button;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Widget button = _buildButton(context);
-
-    // Wrap with animations if enabled
-    if (widget.enableScaleAnimation || widget.enableHoverAnimation) {
-      button = AnimatedBuilder(
-        animation: Listenable.merge(
-            [_scaleAnimation, _hoverAnimation, _elevationAnimation]),
-        builder: (context, child) {
-          Widget animatedButton = child!;
-
-          // Apply scale animation
-          if (widget.enableScaleAnimation) {
-            animatedButton = Transform.scale(
-              scale: _scaleAnimation.value,
-              child: animatedButton,
-            );
-          }
-
-          // Apply hover color overlay
-          if (widget.enableHoverAnimation && widget.hoverColor != null) {
-            animatedButton = Container(
-              decoration: BoxDecoration(
-                borderRadius: widget.borderRadius ?? BorderRadius.circular(8),
-                color:
-                    widget.hoverColor!.withOpacity(_hoverAnimation.value * 0.1),
-              ),
-              child: animatedButton,
-            );
-          }
-
-          return animatedButton;
-        },
-        child: button,
-      );
-
-      // Add gesture detection for animations
-      button = GestureDetector(
-        onTapDown: _handleTapDown,
-        onTapUp: _handleTapUp,
-        onTapCancel: _handleTapCancel,
-        child: MouseRegion(
-          onEnter: (_) => _handleHover(true),
-          onExit: (_) => _handleHover(false),
-          cursor: widget.onPressed != null
-              ? SystemMouseCursors.click
-              : SystemMouseCursors.basic,
-          child: button,
-        ),
-      );
-    }
-
-    return button;
   }
 }

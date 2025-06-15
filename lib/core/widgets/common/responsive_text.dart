@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_portfolio/core/responsive/responsive_framework.dart';
 
 enum TextVariant {
-  display, // Hero text, largest
-  headline, // Section headings
-  title, // Card titles, subsections
-  body, // Regular paragraph text
-  label, // Button labels, form labels
-  caption, // Small descriptive text
+  display,
+  headline,
+  title,
+  body,
+  label,
+  caption,
 }
 
 enum TextWeight {
@@ -19,7 +19,7 @@ enum TextWeight {
   bold,
 }
 
-class ResponsiveText extends StatefulWidget {
+class ResponsiveText extends StatelessWidget {
   final String text;
   final TextVariant variant;
   final TextStyle? style;
@@ -28,14 +28,12 @@ class ResponsiveText extends StatefulWidget {
   final TextOverflow? overflow;
   final bool softWrap;
 
-  // Responsive font sizes - if provided, override variant defaults
   final double? mobileFontSize;
   final double? tabletFontSize;
   final double? smallLaptopFontSize;
   final double? desktopFontSize;
   final double? largeDesktopFontSize;
 
-  // Text behavior
   final bool enableInteractiveSelection;
   final bool enableCopyOnLongPress;
   final bool enableHapticFeedback;
@@ -43,24 +41,17 @@ class ResponsiveText extends StatefulWidget {
   final void Function()? onLongPress;
   final void Function(String)? onSelectionChanged;
 
-  // Styling options
   final TextWeight? weight;
   final Color? color;
   final double? letterSpacing;
   final double? wordSpacing;
-  final double? height; // Line height multiplier
+  final double? height;
   final TextDecoration? decoration;
   final List<Shadow>? shadows;
 
-  // Animation options
-  final bool enableFadeIn;
-  final bool enableTypeWriter;
-  final Duration animationDuration;
-  final Curve animationCurve;
-
-  // Accessibility
   final String? semanticsLabel;
   final bool excludeFromSemantics;
+  final TextDirection? textDirection;
 
   const ResponsiveText(
     this.text, {
@@ -76,7 +67,7 @@ class ResponsiveText extends StatefulWidget {
     this.smallLaptopFontSize,
     this.desktopFontSize,
     this.largeDesktopFontSize,
-    this.enableInteractiveSelection = false,
+    this.enableInteractiveSelection = true,
     this.enableCopyOnLongPress = false,
     this.enableHapticFeedback = true,
     this.onTap,
@@ -89,15 +80,11 @@ class ResponsiveText extends StatefulWidget {
     this.height,
     this.decoration,
     this.shadows,
-    this.enableFadeIn = false,
-    this.enableTypeWriter = false,
-    this.animationDuration = const Duration(milliseconds: 800),
-    this.animationCurve = Curves.easeOut,
     this.semanticsLabel,
     this.excludeFromSemantics = false,
+    this.textDirection,
   });
 
-  // Named constructors for common use cases
   const ResponsiveText.display(
     String text, {
     Key? key,
@@ -107,7 +94,6 @@ class ResponsiveText extends StatefulWidget {
     TextOverflow? overflow,
     Color? color,
     TextWeight? weight,
-    bool enableFadeIn = false,
     VoidCallback? onTap,
     String? semanticsLabel,
   }) : this(
@@ -120,7 +106,6 @@ class ResponsiveText extends StatefulWidget {
           overflow: overflow,
           color: color,
           weight: weight,
-          enableFadeIn: enableFadeIn,
           onTap: onTap,
           semanticsLabel: semanticsLabel,
         );
@@ -134,7 +119,6 @@ class ResponsiveText extends StatefulWidget {
     TextOverflow? overflow,
     Color? color,
     TextWeight? weight,
-    bool enableFadeIn = false,
     VoidCallback? onTap,
     String? semanticsLabel,
   }) : this(
@@ -147,7 +131,6 @@ class ResponsiveText extends StatefulWidget {
           overflow: overflow,
           color: color,
           weight: weight,
-          enableFadeIn: enableFadeIn,
           onTap: onTap,
           semanticsLabel: semanticsLabel,
         );
@@ -185,7 +168,6 @@ class ResponsiveText extends StatefulWidget {
     int? maxLines,
     TextOverflow? overflow,
     Color? color,
-    bool enableInteractiveSelection = false,
     VoidCallback? onTap,
     String? semanticsLabel,
   }) : this(
@@ -197,7 +179,6 @@ class ResponsiveText extends StatefulWidget {
           maxLines: maxLines,
           overflow: overflow,
           color: color,
-          enableInteractiveSelection: enableInteractiveSelection,
           onTap: onTap,
           semanticsLabel: semanticsLabel,
         );
@@ -246,101 +227,8 @@ class ResponsiveText extends StatefulWidget {
           semanticsLabel: semanticsLabel,
         );
 
-  @override
-  State<ResponsiveText> createState() => _ResponsiveTextState();
-}
-
-class _ResponsiveTextState extends State<ResponsiveText>
-    with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late AnimationController _typeWriterController;
-  late Animation<double> _fadeAnimation;
-  late Animation<int> _typeWriterAnimation;
-
-  String _displayText = '';
-
-  @override
-  void initState() {
-    super.initState();
-
-    _fadeController = AnimationController(
-      duration: widget.animationDuration,
-      vsync: this,
-    );
-
-    _typeWriterController = AnimationController(
-      duration: widget.animationDuration,
-      vsync: this,
-    );
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: widget.animationCurve,
-    );
-
-    _typeWriterAnimation = IntTween(
-      begin: 0,
-      end: widget.text.length,
-    ).animate(CurvedAnimation(
-      parent: _typeWriterController,
-      curve: widget.animationCurve,
-    ))
-      ..addListener(() {
-        setState(() {
-          _displayText = widget.text.substring(0, _typeWriterAnimation.value);
-        });
-      });
-
-    // Start animations if enabled
-    if (widget.enableFadeIn) {
-      _fadeController.forward();
-    }
-
-    if (widget.enableTypeWriter) {
-      _typeWriterController.forward();
-    } else {
-      _displayText = widget.text;
-    }
-  }
-
-  @override
-  void dispose() {
-    _fadeController.dispose();
-    _typeWriterController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(ResponsiveText oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.text != widget.text) {
-      if (widget.enableTypeWriter) {
-        _typeWriterController.reset();
-        _typeWriterAnimation = IntTween(
-          begin: 0,
-          end: widget.text.length,
-        ).animate(CurvedAnimation(
-          parent: _typeWriterController,
-          curve: widget.animationCurve,
-        ))
-          ..addListener(() {
-            setState(() {
-              _displayText =
-                  widget.text.substring(0, _typeWriterAnimation.value);
-            });
-          });
-        _typeWriterController.forward();
-      } else {
-        setState(() {
-          _displayText = widget.text;
-        });
-      }
-    }
-  }
-
   (double, double, double, double, double) _getVariantFontSizes() {
-    return switch (widget.variant) {
+    return switch (variant) {
       TextVariant.display => (32.0, 40.0, 48.0, 56.0, 64.0),
       TextVariant.headline => (24.0, 28.0, 32.0, 36.0, 40.0),
       TextVariant.title => (18.0, 20.0, 22.0, 24.0, 26.0),
@@ -351,7 +239,7 @@ class _ResponsiveTextState extends State<ResponsiveText>
   }
 
   FontWeight _getTextWeight() {
-    final variantWeight = switch (widget.variant) {
+    final variantWeight = switch (variant) {
       TextVariant.display => TextWeight.bold,
       TextVariant.headline => TextWeight.semiBold,
       TextVariant.title => TextWeight.medium,
@@ -359,10 +247,8 @@ class _ResponsiveTextState extends State<ResponsiveText>
       TextVariant.label => TextWeight.medium,
       TextVariant.caption => TextWeight.regular,
     };
-
-    final weight = widget.weight ?? variantWeight;
-
-    return switch (weight) {
+    final effectiveWeight = weight ?? variantWeight;
+    return switch (effectiveWeight) {
       TextWeight.light => FontWeight.w300,
       TextWeight.regular => FontWeight.w400,
       TextWeight.medium => FontWeight.w500,
@@ -376,21 +262,20 @@ class _ResponsiveTextState extends State<ResponsiveText>
         _getVariantFontSizes();
 
     return context.responsiveValue<double>(
-      mobile: widget.mobileFontSize ?? mobile,
-      tablet: widget.tabletFontSize ?? tablet,
-      smallLaptop: widget.smallLaptopFontSize ?? smallLaptop,
-      desktop: widget.desktopFontSize ?? desktop,
-      largeDesktop: widget.largeDesktopFontSize ?? largeDesktop,
+      mobile: mobileFontSize ?? mobile,
+      tablet: tabletFontSize ?? tablet,
+      smallLaptop: smallLaptopFontSize ?? smallLaptop,
+      desktop: desktopFontSize ?? desktop,
+      largeDesktop: largeDesktopFontSize ?? largeDesktop,
     );
   }
 
   TextStyle _buildTextStyle(BuildContext context) {
     final theme = Theme.of(context);
-    final responsiveFontSize = _getResponsiveFontSize(context);
+    final fontSize = _getResponsiveFontSize(context);
     final fontWeight = _getTextWeight();
 
-    // Base style from theme based on variant
-    final baseStyle = switch (widget.variant) {
+    final baseStyle = switch (variant) {
       TextVariant.display => theme.textTheme.displayLarge,
       TextVariant.headline => theme.textTheme.headlineMedium,
       TextVariant.title => theme.textTheme.titleLarge,
@@ -399,117 +284,94 @@ class _ResponsiveTextState extends State<ResponsiveText>
       TextVariant.caption => theme.textTheme.bodySmall,
     };
 
-    return baseStyle
-            ?.copyWith(
-              fontSize: responsiveFontSize,
-              fontWeight: fontWeight,
-              color: widget.color,
-              letterSpacing: widget.letterSpacing,
-              wordSpacing: widget.wordSpacing,
-              height: widget.height,
-              decoration: widget.decoration,
-              shadows: widget.shadows,
-            )
-            .merge(widget.style) ??
-        TextStyle(
-          fontSize: responsiveFontSize,
+    final fallback = TextStyle(fontSize: fontSize, fontWeight: fontWeight);
+
+    return (baseStyle ?? fallback)
+        .copyWith(
+          fontSize: fontSize,
           fontWeight: fontWeight,
-          color: widget.color,
-          letterSpacing: widget.letterSpacing,
-          wordSpacing: widget.wordSpacing,
-          height: widget.height,
-          decoration: widget.decoration,
-          shadows: widget.shadows,
-        ).merge(widget.style);
+          color: color,
+          letterSpacing: letterSpacing,
+          wordSpacing: wordSpacing,
+          height: height,
+          decoration: decoration,
+          shadows: shadows,
+        )
+        .merge(style);
   }
 
-  void _handleLongPress() {
-    if (widget.enableHapticFeedback) {
-      HapticFeedback.mediumImpact();
-    }
+  void _handleLongPress(BuildContext context) {
+    if (enableHapticFeedback) HapticFeedback.mediumImpact();
 
-    if (widget.enableCopyOnLongPress) {
-      Clipboard.setData(ClipboardData(text: widget.text));
+    if (enableCopyOnLongPress) {
+      Clipboard.setData(ClipboardData(text: text));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Text copied to clipboard'),
-          duration: Duration(seconds: 2),
+          content: const Text('Text copied to clipboard'),
+          duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
       );
     }
 
-    widget.onLongPress?.call();
+    onLongPress?.call();
   }
 
   void _handleTap() {
-    if (widget.enableHapticFeedback && widget.onTap != null) {
-      HapticFeedback.lightImpact();
-    }
-    widget.onTap?.call();
-  }
-
-  Widget _buildText(BuildContext context) {
-    final textStyle = _buildTextStyle(context);
-    final displayText = widget.enableTypeWriter ? _displayText : widget.text;
-
-    if (widget.enableInteractiveSelection) {
-      return SelectableText(
-        displayText,
-        style: textStyle,
-        textAlign: widget.textAlign,
-        maxLines: widget.maxLines,
-        onSelectionChanged: (selection, cause) {
-          final selectedText = displayText.substring(
-            selection.start,
-            selection.end,
-          );
-          widget.onSelectionChanged?.call(selectedText);
-        },
-        onTap: _handleTap,
-      );
-    }
-
-    Widget textWidget = Text(
-      displayText,
-      style: textStyle,
-      textAlign: widget.textAlign,
-      maxLines: widget.maxLines,
-      overflow: widget.overflow,
-      softWrap: widget.softWrap,
-      semanticsLabel: widget.semanticsLabel,
-    );
-
-    if (widget.onTap != null ||
-        widget.onLongPress != null ||
-        widget.enableCopyOnLongPress) {
-      textWidget = GestureDetector(
-        onTap: widget.onTap != null ? _handleTap : null,
-        onLongPress:
-            (widget.onLongPress != null || widget.enableCopyOnLongPress)
-                ? _handleLongPress
-                : null,
-        child: textWidget,
-      );
-    }
-
-    if (widget.excludeFromSemantics) {
-      textWidget = ExcludeSemantics(child: textWidget);
-    }
-
-    return textWidget;
+    if (enableHapticFeedback && onTap != null) HapticFeedback.lightImpact();
+    onTap?.call();
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget textWidget = _buildText(context);
+    final textStyle = _buildTextStyle(context);
 
-    // Apply fade in animation
-    if (widget.enableFadeIn) {
-      textWidget = FadeTransition(
-        opacity: _fadeAnimation,
+    Widget textWidget;
+
+    if (enableInteractiveSelection) {
+      textWidget = SelectableText(
+        text,
+        style: textStyle,
+        textAlign: textAlign,
+        maxLines: maxLines,
+        onSelectionChanged: (selection, cause) {
+          if (selection.start >= 0 &&
+              selection.end <= text.length &&
+              selection.start < selection.end) {
+            final selected = text.substring(selection.start, selection.end);
+            onSelectionChanged?.call(selected);
+          }
+        },
+        onTap: _handleTap,
+        textDirection: textDirection,
+      );
+    } else {
+      textWidget = Text(
+        text,
+        style: textStyle,
+        textAlign: textAlign,
+        maxLines: maxLines,
+        overflow: overflow,
+        softWrap: softWrap,
+        semanticsLabel: semanticsLabel,
+        textDirection: textDirection,
+      );
+    }
+
+    if (onTap != null || onLongPress != null || enableCopyOnLongPress) {
+      textWidget = GestureDetector(
+        onTap: onTap != null ? _handleTap : null,
+        onLongPress: (onLongPress != null || enableCopyOnLongPress)
+            ? () => _handleLongPress(context)
+            : null,
         child: textWidget,
       );
+    }
+
+    if (semanticsLabel != null && !excludeFromSemantics) {
+      textWidget = Semantics(label: semanticsLabel, child: textWidget);
+    } else if (excludeFromSemantics) {
+      textWidget = ExcludeSemantics(child: textWidget);
     }
 
     return textWidget;

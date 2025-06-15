@@ -216,6 +216,7 @@ class HeroSection extends StatelessWidget {
               ResponsiveText(
                 profile.name,
                 style: theme.textTheme.displayLarge,
+                overflow: TextOverflow.ellipsis,
                 smallLaptopFontSize: nameSize,
                 desktopFontSize: nameSize,
                 largeDesktopFontSize: nameSize,

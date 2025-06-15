@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portfolio/core/navigation/scroll_controller.dart';
 import 'package:flutter_portfolio/core/responsive/responsive_framework.dart';
+import 'package:flutter_portfolio/core/widgets/common/responsive_text.dart'; // Import ResponsiveText
 import 'package:flutter_portfolio/core/widgets/common/section_wrapper.dart';
 import 'package:flutter_portfolio/features/portfolio/presentation/bloc/portfolio_bloc.dart';
 
@@ -31,7 +32,12 @@ class AboutSection extends StatelessWidget {
       builder: (context, state) {
         final profile = state.profile;
         if (profile == null) {
-          return const Center(child: Text('No profile data available'));
+          return const Center(
+            child: ResponsiveText.body(
+              'No profile data available',
+              semanticsLabel: 'No profile data available',
+            ),
+          );
         }
         return Container(
           width: ResponsiveHelper.getContentWidth(context),
@@ -39,17 +45,19 @@ class AboutSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              ResponsiveText.body(
                 profile.about,
-                style: context.responsiveTextStyle(
-                    Theme.of(context).textTheme.bodyLarge!),
+                style: Theme.of(context).textTheme.bodyLarge,
+                semanticsLabel: 'About me description',
               ),
               const SizedBox(height: 32),
-              Text(
+              ResponsiveText.title(
                 'Key Accomplishments',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
+                weight: TextWeight.semiBold,
+                semanticsLabel: 'Key accomplishments heading',
               ),
               const SizedBox(height: 16),
               state.profile?.keyAccomplishments != null
@@ -67,9 +75,12 @@ class AboutSection extends StatelessWidget {
                     )
                   : const SizedBox.shrink(),
               const SizedBox(height: 32),
-              Text(
+              ResponsiveText.body(
                 'Want to know more about my journey? You can download my CV by clicking the button below.',
                 style: Theme.of(context).textTheme.bodyMedium,
+                semanticsLabel: 'Call to action for downloading CV',
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -79,7 +90,10 @@ class AboutSection extends StatelessWidget {
                       .scrollToSection(NavigationSection.resume);
                 },
                 icon: const Icon(Icons.download),
-                label: const Text('Download CV'),
+                label: const ResponsiveText.body(
+                  'Download CV',
+                  semanticsLabel: 'Download CV button',
+                ),
                 style: ElevatedButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -112,11 +126,12 @@ class _AccomplishmentTile extends StatelessWidget {
       children: [
         Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
         const SizedBox(width: 8),
-        Text(
+        ResponsiveText.body(
           text,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
               ),
+          semanticsLabel: 'Accomplishment: $text',
         ),
       ],
     );
